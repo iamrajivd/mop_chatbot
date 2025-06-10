@@ -1,17 +1,19 @@
 import os
-from openai import OpenAI
+import openai
+import streamlit as st  # ✅ required for secrets
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 def generate_mop(node, action, feature):
     full_text = ""
 
+    # Folder check
     if not os.path.exists("docs"):
-        return "📁 'docs/' folder not found. Please upload at least one CLI guide."
+        return "❗️'docs' folder not found. Please upload CLI guide."
 
     files = os.listdir("docs")
     if not files:
-        return "📂 No files uploaded. Please upload PDF or TXT files to 'docs/' first."
+        return "⚠️ No CLI guide uploaded. Please upload a .pdf or .txt file."
 
     for fname in files:
         path = os.path.join("docs", fname)
@@ -22,29 +24,8 @@ def generate_mop(node, action, feature):
             from chatbot.document_parser import extract_text_from_pdf
             full_text += extract_text_from_pdf(path)
 
-    prompt = f"""Generate a Method of Procedure (MoP) for:
-Node: {node}
-Action: {action}
-Feature: {feature}
+    if not full_text.strip():
+        return "📄 Uploaded file is empty or unreadable."
 
-Use the following CLI content:
-{full_text[:6000]}
-
-Include:
-- Objective
-- Pre-checks
-- Step-by-step commands
-- Rollback steps
-"""
-
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": "You are a telecom engineer writing professional MoPs."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.3,
-        max_tokens=1500
-    )
-
-    return response.choices[0].message.content
+    # Prompt and OpenAI logic
+    ...
