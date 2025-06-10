@@ -6,10 +6,15 @@ try:
 
     st.title("📄 Nokia CMM MoP Generator")
 
-    uploaded_files = st.file_uploader("Upload CLI/Product Guides", type=['pdf', 'txt'], accept_multiple_files=True)
+    uploaded_files = st.file_uploader(
+        "Upload CLI/Product Guides",
+        type=['pdf', 'txt'],
+        accept_multiple_files=True
+    )
+
     if uploaded_files:
         upload_and_process_docs(uploaded_files)
-        st.success("✅ Documents processed and indexed!")
+        st.success("✅ Documents uploaded and processed.")
 
     st.subheader("Create MoP")
     node = st.text_input("Node Name")
@@ -22,4 +27,9 @@ try:
         st.download_button("Download MoP", mop_text, file_name=f"{node}_{action}.txt")
 
 except Exception as e:
-    st.exception(e)  # 👈 this will show the error in the Streamlit UI
+    st.exception(e)  # ✅ Shows full traceback in UI
+
+if "OPENAI_API_KEY" in st.secrets:
+    st.success("✅ API key is loaded successfully.")
+else:
+    st.error("❌ API key is missing. Set it in Streamlit Cloud secrets.")

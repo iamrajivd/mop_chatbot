@@ -1,8 +1,9 @@
 import os
 import openai
-import streamlit as st  # ✅ required for secrets
+import streamlit as st
+from openai import OpenAI
 
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 def generate_mop(node, action, feature):
     full_text = ""
