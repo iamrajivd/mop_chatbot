@@ -1,32 +1,32 @@
-import os
-import openai
-import streamlit as st
 from openai import OpenAI
+import streamlit as st
 
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-def generate_mop(node, action, feature):
-    full_text = ""
+def generate_mop(node, action, feature, full_text=""):
+    prompt = f"""Generate a Method of Procedure (MoP) for:
+Node: {node}
+Action: {action}
+Feature: {feature}
 
-    # Folder check
-    if not os.path.exists("docs"):
-        return "❗️'docs' folder not found. Please upload CLI guide."
+Reference CLI content:
+{full_text[:6000]}
 
-    files = os.listdir("docs")
-    if not files:
-        return "⚠️ No CLI guide uploaded. Please upload a .pdf or .txt file."
+Include:
+- Objective
+- Pre-checks
+- Step-by-step commands
+- Rollback steps
+"""
 
-    for fname in files:
-        path = os.path.join("docs", fname)
-        if fname.endswith(".txt"):
-            with open(path, "r", encoding="utf-8") as f:
-                full_text += f.read()
-        elif fname.endswith(".pdf"):
-            from chatbot.document_parser import extract_text_from_pdf
-            full_text += extract_text_from_pdf(path)
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",  # ✅ Switch from "gpt-4"
+        messages=[
+            {"role": "system", "content": "You are a telecom engineer writing professional MoPs."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.3,
+        max_tokens=1500
+    )
 
-    if not full_text.strip():
-        return "📄 Uploaded file is empty or unreadable."
-
-    # Prompt and OpenAI logic
-    ...
+    return response.choices[0].message.content
